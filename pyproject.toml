@@ -32,6 +32,12 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
 ]
 keywords = ["storybook", "visual testing", "streamlit", "python"]
+dependencies = [
+  "nest-asyncio>=1.6",
+  "streamlit>=1.37",
+  "streamlit-antd-components>=0.3",
+  "watchdog>=3",
+]
 
 [project.scripts]
 historybook = "historybook:run"
