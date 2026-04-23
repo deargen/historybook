@@ -36,8 +36,12 @@ dependencies = [
   "nest-asyncio>=1.6",
   "streamlit>=1.37",
   "streamlit-antd-components>=0.3",
-  "watchdog>=3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/deargen/historybook"
+Repository = "https://github.com/deargen/historybook"
+Issues = "https://github.com/deargen/historybook/issues"
 
 [project.scripts]
 historybook = "historybook:run"

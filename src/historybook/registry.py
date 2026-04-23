@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
-_components: list[ComponentEntry] = []
+_components: dict[tuple[str, str], ComponentEntry] = {}
 
 
 @dataclass
@@ -70,13 +70,11 @@ def component(name: str, *, tags: list[str] | None = None):
                 bound_method = getattr(instance, attr_name)
                 histories.append(HistoryEntry(name=attr._history_name, fn=bound_method))
 
-        _components.append(
-            ComponentEntry(
-                name=name,
-                tags=tags or [],
-                histories=histories,
-                module_path=cls.__module__,
-            )
+        _components[(name, cls.__module__)] = ComponentEntry(
+            name=name,
+            tags=tags or [],
+            histories=histories,
+            module_path=cls.__module__,
         )
         return cls
 
@@ -84,7 +82,7 @@ def component(name: str, *, tags: list[str] | None = None):
 
 
 def get_all_components() -> list[ComponentEntry]:
-    return list(_components)
+    return list(_components.values())
 
 
 def clear_registry() -> None:

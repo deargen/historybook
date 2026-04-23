@@ -27,6 +27,12 @@ Good fits:
   data cleaning).
 - Inspecting intermediate artefacts (images, DataFrames, JSON) during
   development.
+- **LLM / agent output inspection.** Calls are expensive, outputs are
+  open-ended, and assertion-style unit tests don't catch things like "the
+  explanation is technically correct but phrased weirdly." Historybook gives
+  you a quick human-in-the-loop surface: render the prompt, response,
+  tool-calls, token/cost metrics side-by-side and eyeball quality across
+  prompt/model variants.
 - Demoing internal tools to teammates without deploying anything.
 
 ## Install

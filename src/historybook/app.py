@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+import fnmatch
 import logging
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import streamlit as st
 import streamlit_antd_components as sac
 
-from historybook.discovery import discover_and_import
+from historybook.discovery import (
+    discover_and_import,
+    get_history_root_dirs,
+)
 from historybook.registry import clear_registry, get_all_components
 
 if TYPE_CHECKING:
@@ -165,6 +170,55 @@ def _render_history(entry: HistoryEntry) -> None:
         st.error(f"Error rendering history: {entry.name}")
 
 
+# ── File watchers for auto-reload ──
+
+
+@st.cache_resource
+def _register_history_watchers(root_dirs_key: tuple[str, ...]) -> bool:
+    """Register Streamlit file watchers on history root dirs so edits/additions auto-rerun.
+
+    Runs once per Streamlit server process (via @st.cache_resource), regardless of
+    how many sessions open the app. The `root_dirs_key` tuple is only used as the
+    cache key — changing `[tool.historybook].roots` triggers re-registration.
+    """
+    try:
+        from streamlit.runtime import get_instance
+        from streamlit.watcher.path_watcher import watch_dir
+    except ImportError:
+        logger.warning(
+            "Streamlit watcher API unavailable; history auto-reload disabled"
+        )
+        return False
+
+    def _on_change(changed_path: str) -> None:
+        name = Path(changed_path).name
+        if not (
+            fnmatch.fnmatch(name, "*_histories.py")
+            or fnmatch.fnmatch(name, "*.histories.py")
+        ):
+            return
+        # Drop the stale module so the next rerun re-execs fresh source.
+        for mod_name in list(sys.modules.keys()):
+            mod = sys.modules.get(mod_name)
+            if mod is not None and getattr(mod, "__file__", None) == changed_path:
+                del sys.modules[mod_name]
+        # Ask every active session to rerun.
+        try:
+            runtime = get_instance()
+            for session_info in runtime._session_mgr.list_active_sessions():
+                session_info.session.request_rerun(None)
+        except Exception:
+            logger.exception("Failed to trigger historybook rerun")
+
+    for root_str in root_dirs_key:
+        try:
+            watch_dir(root_str, _on_change)
+        except Exception:
+            logger.exception("Failed to watch %s", root_str)
+
+    return True
+
+
 # ── Launch ──
 
 
@@ -186,6 +240,8 @@ def launch(root: Path | None = None) -> None:
     clear_registry()
     discover_and_import(root)
     components = get_all_components()
+
+    _register_history_watchers(tuple(str(d) for d in get_history_root_dirs(root)))
 
     if not components:
         st.error(

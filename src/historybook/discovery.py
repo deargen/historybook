@@ -89,6 +89,19 @@ def discover_and_import(root: Path | None = None) -> int:
     return count
 
 
+def get_history_root_dirs(root: Path | None = None) -> list[Path]:
+    """Return absolute paths of configured [tool.historybook].roots directories that exist."""
+    pyproject_path = find_pyproject(root)
+    if pyproject_path is None:
+        return []
+    project_root = pyproject_path.parent
+    return [
+        (project_root / r).resolve()
+        for r in read_roots(pyproject_path)
+        if (project_root / r).is_dir()
+    ]
+
+
 def _import_history_file(path: Path) -> None:
     """Import a single history file to trigger @component/@history decorators."""
     path_hash = hashlib.sha256(str(path.resolve()).encode()).hexdigest()[:12]
