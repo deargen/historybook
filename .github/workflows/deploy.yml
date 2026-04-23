@@ -51,3 +51,4 @@ jobs:
           branch: chore/release-${{ github.event.inputs.version-tag }}
           labels: |
             release
+
