@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling", "version-pioneer"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "version-pioneer"
+
+[tool.hatch.build.hooks.version-pioneer]
+
+[tool.version-pioneer]
+versionscript = "src/historybook/_version.py"
+versionfile-sdist = "src/historybook/_version.py"
+versionfile-wheel = "historybook/_version.py"
+
+[tool.hatch.build.targets.wheel]
+sources = ["src"]
+
+[project]
+name = "historybook"
+dynamic = ["version"]
+description = "Storybook-like visual testing for Python, powered by Streamlit"
+authors = [{ name = "Kiyoon Kim" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "License :: OSI Approved :: MIT License",
+]
+keywords = ["storybook", "visual testing", "streamlit", "python"]
+
+[project.scripts]
+historybook = "historybook:run"
